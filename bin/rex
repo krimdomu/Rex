@@ -1,4 +1,4 @@
-#!perl
+#!/usr/bin/env perl
 
 #
 # (c) Jan Gehring <jan.gehring@gmail.com>
@@ -11,8 +11,12 @@ use warnings;
 
 # VERSION
 
-use Rex::CLI;
+use Rex::DetectCLI;
+my $cli = detect_cli;
 
+require "Rex/CLI/$cli.pm";
+
+#eval "use $cli;";
 my $rex = Rex::CLI->new;
 $rex->__run__;
 
