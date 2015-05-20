@@ -27,18 +27,20 @@ sub new {
 }
 
 sub add {
-  my ( $self, $task, $start ) = @_;
-  my $f = Rex::Fork::Task->new( task => $task );
+  my ( $self, $task, $task_object, $server ) = @_;
+  my $f = Rex::Fork::Task->new(
+    task   => $task,
+    object => $task_object,
+    server => $server,
+  );
 
   push( @{ $self->{'forks'} }, $f );
 
-  if ($start) {
-    $f->start;
-    ++$self->{'running'};
+  $f->start;
+  ++$self->{'running'};
 
-    if ( $self->{'running'} >= $self->{'max'} ) {
-      $self->wait_for_one;
-    }
+  if ( $self->{'running'} >= $self->{'max'} ) {
+    $self->wait_for_one;
   }
 }
 

@@ -323,7 +323,7 @@ sub run {
     unless ( $self->{IN_TRANSACTION} ) {
 
       # not inside a transaction, so lets fork happyly...
-      $fm->add( $forked_sub, 1 );
+      $fm->add( $forked_sub, $task, $server->to_s );
     }
     else {
 # inside a transaction, no little small funny kids, ... and no chance to get zombies :(
@@ -415,5 +415,7 @@ sub get_thread_count {
   );
   return 1;
 }
+
+sub get_summary { %Rex::Fork::Task::SUMMARY }
 
 1;

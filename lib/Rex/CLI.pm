@@ -595,6 +595,7 @@ CHECK_OVERWRITE: {
     @exit_codes = Rex::TaskList->create()->get_exit_codes();
   }
 
+  Rex::Logger::info($_) for summarize();
   #print ">> $$\n";
   #print Dumper(\@exit_codes);
   # lock loeschen
@@ -836,6 +837,20 @@ sub _list_groups {
     my $indent = " " x $max_group_len . "   ";
     print wrap( "", $indent, $output );
   }
+}
+
+sub summarize {
+  my %summary = Rex::TaskList->create()->get_summary();
+  my @msgs    = ("SUMMARY");
+
+  for my $task (sort keys %summary) {
+    my @failures = grep { $_->{exit_code} != 0 } @{ $summary{$task} };
+    my $success  = @failures ? 'failed' : 'succeeded';
+    my $servers  = @failures ? join(", ", map { $_->{server} } @failures) : 'on all hosts';
+    push @msgs, "$task $success on $servers";
+  }
+
+  return @msgs;
 }
 
 1;
