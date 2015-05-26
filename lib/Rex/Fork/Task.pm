@@ -39,38 +39,20 @@ sub start {
     $self->{chld} = 1;
     my $func = $self->{task};
 
-    # only allow this if no parallelism is given.
-    # with parallelism active it doesn't make sense.
-    if ($Rex::WITH_EXIT_STATUS) {
-      eval {
-        &$func($self);
-        1;
-      } or do {
-        push( @PROCESS_LIST, $? || 1 );
-        $self->{'running'} = 0;
-        die($@);
-      };
+    eval { &$func($self) };
+    my $exit_code = $@ ? ($? || 1) : 0;
+    push @PROCESS_LIST, $exit_code;
 
-      $self->{'running'} = 0;
-      push( @PROCESS_LIST, 0 );
-      exit();
-    }
-    else {
-      eval { &$func($self) };
-      my $exit_code = $@ ? ($? || 1) : 0;
-      push @PROCESS_LIST, $exit_code;
-
-      my $task_name    = $self->{object}->name;
-      my $task_summary = $SUMMARY{$task_name} ||= [];
-      push @$task_summary, {
-        server    => $self->{server},
-        exit_code => $exit_code,
-      };
-      # need to do a second assignment because %SUMMARY is a tie
-      $SUMMARY{$task_name} = $task_summary;
-      $self->{'running'} = 0;
-      exit();
-    }
+    my $task_name    = $self->{object}->name;
+    my $task_summary = $SUMMARY{$task_name} ||= [];
+    push @$task_summary, {
+      server    => $self->{server},
+      exit_code => $exit_code,
+    };
+    # need to do a second assignment because %SUMMARY is a tie
+    $SUMMARY{$task_name} = $task_summary;
+    $self->{'running'} = 0;
+    exit();
   }
 }
 
