@@ -15,7 +15,7 @@ use POSIX ":sys_wait_h";
 BEGIN {
 
   use Rex::Shared::Var;
-  share qw(@PROCESS_LIST %SUMMARY);
+  share qw(@SUMMARY);
 
 }
 
@@ -39,18 +39,19 @@ sub start {
     $self->{chld} = 1;
     my $func = $self->{task};
 
-    eval { &$func($self) };
-    my $exit_code = $@ ? ($? || 1) : 0;
-    push @PROCESS_LIST, $exit_code;
+    my $success = eval { &$func($self) };
+    $success    = 0 if $@;
+    $success    = 1 if !$success;
 
-    my $task_name    = $self->{object}->name;
-    my $task_summary = $SUMMARY{$task_name} ||= [];
-    push @$task_summary, {
+    my $exit_code = $@ ? ($? || 1) : 0;
+
+    push @SUMMARY, {
+      task      => $self->{object}->name,
       server    => $self->{server},
       exit_code => $exit_code,
+      success   => $success,
     };
-    # need to do a second assignment because %SUMMARY is a tie
-    $SUMMARY{$task_name} = $task_summary;
+
     $self->{'running'} = 0;
     exit();
   }

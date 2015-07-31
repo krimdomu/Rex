@@ -840,15 +840,24 @@ sub _list_groups {
 }
 
 sub summarize {
-  my %summary = Rex::TaskList->create()->get_summary();
+  my @summary = Rex::TaskList->create()->get_summary();
   my @msgs    = ("SUMMARY");
 
-  for my $task (sort keys %summary) {
-    my @failures = grep { $_->{exit_code} != 0 } @{ $summary{$task} };
-    my $success  = @failures ? 'failed' : 'succeeded';
-    my $servers  = @failures ? join(", ", map { $_->{server} } @failures) : 'on all hosts';
-    push @msgs, "$task $success on $servers";
+  my @failures = grep { !$_->{success} } @summary;
+  if (! @failures) {
+    push @msgs, "All tasks successful on all hosts";
+    return @msgs;
   }
+
+  for my $failure (@failures) {
+    my $task   = $failure->{task_name};
+    my $server = $failure->{server};
+    push @msgs, "$task failed on $server";
+  }
+
+  my $total      = scalar @summary;
+  my $fail_count = scalar @failures;
+  push @msgs, "$fail_count/$total task execution failures";
 
   return @msgs;
 }

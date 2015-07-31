@@ -396,7 +396,7 @@ sub is_transaction {
 
 sub get_exit_codes {
   my ($self) = @_;
-  return @Rex::Fork::Task::PROCESS_LIST;
+  return map { $_->{exit_code} } @Rex::Fork::Task::SUMMARY;
 }
 
 sub get_thread_count {
@@ -416,6 +416,6 @@ sub get_thread_count {
   return 1;
 }
 
-sub get_summary { %Rex::Fork::Task::SUMMARY }
+sub get_summary { @Rex::Fork::Task::SUMMARY }
 
 1;
