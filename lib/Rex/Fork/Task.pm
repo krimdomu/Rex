@@ -41,7 +41,6 @@ sub start {
 
     my $success = eval { &$func($self) };
     $success    = 0 if $@;
-    $success    = 1 if !$success;
 
     my $exit_code = $@ ? ($? || 1) : 0;
 
