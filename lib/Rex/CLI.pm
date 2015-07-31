@@ -850,9 +850,9 @@ sub summarize {
   }
 
   for my $failure (@failures) {
-    my $task   = $failure->{task_name};
+    my $task   = $failure->{task};
     my $server = $failure->{server};
-    push @msgs, "$task failed on $server";
+    push @msgs, " - $task failed on $server";
   }
 
   my $total      = scalar @summary;
