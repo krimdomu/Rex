@@ -843,7 +843,7 @@ sub summarize {
   my @summary = Rex::TaskList->create()->get_summary();
   my @msgs    = ("SUMMARY");
 
-  my @failures = grep { !$_->{success} } @summary;
+  my @failures = grep { $_->{exit_code} != 0 } @summary;
   if (! @failures) {
     push @msgs, "All tasks successful on all hosts";
     return @msgs;

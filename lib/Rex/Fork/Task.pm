@@ -39,16 +39,13 @@ sub start {
     $self->{chld} = 1;
     my $func = $self->{task};
 
-    my $success = eval { &$func($self) };
-    $success    = 0 if $@;
-
+    eval { &$func($self) };
     my $exit_code = $@ ? ($? || 1) : 0;
 
     push @SUMMARY, {
       task      => $self->{object}->name,
       server    => $self->{server},
       exit_code => $exit_code,
-      success   => $success,
     };
 
     $self->{'running'} = 0;
