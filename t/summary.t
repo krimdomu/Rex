@@ -2,6 +2,7 @@ use Test::Most;
 use Rex::Config;
 use Rex::Commands;
 use Rex::Commands::Run;
+use Rex::Transaction;
 
 $::QUIET = 1;
 
@@ -14,6 +15,8 @@ subtest "distributor => 'Base'" => sub {
             task0 => {server => '<local>', task => 'task0', exit_code => 1},
             task1 => {server => '<local>', task => 'task1', exit_code => 0},
             task2 => {server => '<local>', task => 'task2', exit_code => 0},
+            task3 => {server => '<local>', task => 'task3', exit_code => 1},
+            task4 => {server => '<local>', task => 'task4', exit_code => 1},
         );
     };
 
@@ -24,6 +27,8 @@ subtest "distributor => 'Base'" => sub {
             task0 => {server => '<local>', task => 'task0', exit_code => 1},
             task1 => {server => '<local>', task => 'task1', exit_code => 2},
             task2 => {server => '<local>', task => 'task2', exit_code => 0},
+            task3 => {server => '<local>', task => 'task3', exit_code => 1},
+            task4 => {server => '<local>', task => 'task4', exit_code => 1},
         );
     };
 };
@@ -36,6 +41,8 @@ subtest "distributor => 'Parallel_ForkManager'" => sub {
             task0 => {server => '<local>', task => 'task0', exit_code => 1},
             task1 => {server => '<local>', task => 'task1', exit_code => 0},
             task2 => {server => '<local>', task => 'task2', exit_code => 0},
+            task3 => {server => '<local>', task => 'task3', exit_code => 1},
+            task4 => {server => '<local>', task => 'task4', exit_code => 1},
         );
     };
 
@@ -46,6 +53,8 @@ subtest "distributor => 'Parallel_ForkManager'" => sub {
             task0 => {server => '<local>', task => 'task0', exit_code => 1},
             task1 => {server => '<local>', task => 'task1', exit_code => 2},
             task2 => {server => '<local>', task => 'task2', exit_code => 0},
+            task3 => {server => '<local>', task => 'task3', exit_code => 1},
+            task4 => {server => '<local>', task => 'task4', exit_code => 1},
         );
     };
 };
@@ -67,12 +76,25 @@ sub create_tasks {
     task "task2" => sub { 
         run "ls";
     };
+
+    desc "desc 3";
+    task "task3" => sub { 
+        die "boop";
+    };
+
+    desc "desc 4";
+    task "task4" => sub { 
+        transaction {
+            do_task qw/task3/;
+        };
+    };
 }
 
 sub test_summary {
     my (%expected) = @_;
 
     $Rex::TaskList::task_list = undef;
+
     create_tasks();
 
     my @summary;
