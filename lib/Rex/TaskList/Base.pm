@@ -296,9 +296,7 @@ sub run {
   my $fm = Rex::Fork::Manager->new( max => $self->get_thread_count($task) );
 
   for my $server (@all_server) {
-
     my $forked_sub = sub {
-
       Rex::Logger::init();
       Rex::Logger::info("Running task $task_name on $server");
 
