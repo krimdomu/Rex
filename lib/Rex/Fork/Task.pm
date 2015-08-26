@@ -13,10 +13,8 @@ use POSIX ":sys_wait_h";
 # VERSION
 
 BEGIN {
-
   use Rex::Shared::Var;
   share qw(@SUMMARY);
-
 }
 
 sub new {
