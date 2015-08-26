@@ -42,13 +42,12 @@ sub new {
 
 sub run {
   my ( $self, $task_name, %option ) = @_;
-  my $task = $self->get_task($task_name);
 
   $option{params} ||= { Rex::Args->get };
 
-  my @all_server = @{ $task->server };
-
-  my $fm = Parallel::ForkManager->new( $self->get_thread_count($task) );
+  my $task = $self->get_task($task_name);
+  my $fm   = Parallel::ForkManager->new($self->get_thread_count($task));
+  my $all_servers = $task->server;
 
   $fm->run_on_finish(
     sub {
@@ -57,7 +56,7 @@ sub run {
     }
   );
 
-  for my $server (@all_server) {
+  for my $server (@$all_servers) {
     my $forked_sub = sub {
       Rex::Logger::init();
       Rex::Logger::info("Running task $task_name on $server");
@@ -76,10 +75,14 @@ sub run {
       return $return_value;
     };
 
-    # add the worker (forked_sub) to the fork queue
-    unless ( $self->{IN_TRANSACTION} ) {
-
-      # not inside a transaction, so lets fork happyly...
+    if ($self->{IN_TRANSACTION}) {
+      # Inside a transaction -- no forking and no chance to get zombies.
+      # This only happens if someone calls do_task() from inside a transaction.
+      # Note the result is not appended to @SUMMARY.
+      $forked_sub->();
+    }
+    else {
+      # Not inside a transaction, so lets fork
       $fm->start and next;
 
       eval { $forked_sub->() };
@@ -92,15 +95,10 @@ sub run {
 
       $fm->finish;
     }
-    else {
-# inside a transaction, no little small funny kids, ... and no chance to get zombies :(
-      &$forked_sub();
-    }
   }
 
   Rex::Logger::debug("Waiting for children to finish");
   my $ret = $fm->wait_all_children;
-
   Rex::reconnect_lost_connections();
 
   return $ret;
@@ -112,5 +110,15 @@ sub get_exit_codes {
 }
 
 sub get_summary { @SUMMARY }
+
+sub set_in_transaction {
+  my ( $self, $val ) = @_;
+  $self->{IN_TRANSACTION} = $val;
+}
+
+sub is_transaction {
+  my ($self) = @_;
+  return $self->{IN_TRANSACTION};
+}
 
 1;
