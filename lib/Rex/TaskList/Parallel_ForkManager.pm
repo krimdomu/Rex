@@ -21,13 +21,14 @@ use Rex::Report;
 use Time::HiRes qw(time);
 
 BEGIN {
+  use Rex::Shared::Var;
+  share qw(@SUMMARY);
+
   use Rex::Require;
   Parallel::ForkManager->require;
 }
 
 use base qw(Rex::TaskList::Base);
-
-my @PROCESS_LIST;
 
 sub new {
   my $that  = shift;
@@ -53,32 +54,26 @@ sub run {
     sub {
       my ( $pid, $exit_code ) = @_;
       Rex::Logger::debug("Fork exited: $pid -> $exit_code");
-      push @PROCESS_LIST, $exit_code;
     }
   );
 
   for my $server (@all_server) {
-
     my $forked_sub = sub {
-
       Rex::Logger::init();
-
-      # create a single task object for the run on $server
-
       Rex::Logger::info("Running task $task_name on $server");
-      my $run_task = Rex::Task->new( %{ $task->get_data } );
 
-      $run_task->run(
+      # create a task object for each $server
+      my $run_task = Rex::Task->new( %{ $task->get_data } );
+      my $return_value = $run_task->run(
         $server,
         in_transaction => $self->{IN_TRANSACTION},
         params         => $option{params}
       );
 
-      # destroy cached os info
       Rex::Logger::debug("Destroying all cached os information");
-
       Rex::Logger::shutdown();
 
+      return $return_value;
     };
 
     # add the worker (forked_sub) to the fork queue
@@ -86,22 +81,21 @@ sub run {
 
       # not inside a transaction, so lets fork happyly...
       $fm->start and next;
-      eval {
-        $forked_sub->();
-        1;
-      } or do {
 
-        # exit with error
-        $? = 255 if !$?; # unknown error
-        exit $?;
+      eval { $forked_sub->() };
+      my $exit_code = $@ ? ($? || 1) : 0;
+      push @SUMMARY, {
+        task      => $task_name,
+        server    => $server->to_s,
+        exit_code => $exit_code,
       };
+
       $fm->finish;
     }
     else {
 # inside a transaction, no little small funny kids, ... and no chance to get zombies :(
       &$forked_sub();
     }
-
   }
 
   Rex::Logger::debug("Waiting for children to finish");
@@ -114,7 +108,9 @@ sub run {
 
 sub get_exit_codes {
   my ($self) = @_;
-  return @PROCESS_LIST;
+  return map { $_->{exit_code} } @SUMMARY;
 }
+
+sub get_summary { @SUMMARY }
 
 1;
