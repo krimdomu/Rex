@@ -114,6 +114,6 @@ sub test_summary {
         cmp_deeply \@summary, \@expected_summary, $test_description;
     }
 
-    CORE::unlink("vars.db")      if -f "vars.db";
-    CORE::unlink("vars.db.lock") if -f "vars.db.lock";
+    unlink "vars.db"      if -f "vars.db";
+    unlink "vars.db.lock" if -f "vars.db.lock";
 }
