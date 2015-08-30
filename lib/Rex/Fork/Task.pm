@@ -39,7 +39,6 @@ sub start {
 
     eval { &$func($self) };
     my $exit_code = $@ ? ($? || 1) : 0;
-
     push @SUMMARY, {
       task      => $self->{object}->name,
       server    => $self->{server},
