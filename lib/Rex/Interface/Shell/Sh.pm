@@ -14,6 +14,7 @@ use warnings;
 use Rex::Interface::Shell::Bash;
 
 use base qw(Rex::Interface::Shell::Bash);
+use Carp;
 
 sub new {
   my $class = shift;
@@ -29,6 +30,7 @@ sub detect {
   my ( $self, $con ) = @_;
 
   my ($shell_path) = $con->_exec("echo \$SHELL");
+  confess unless $shell_path;
   if ( $shell_path =~ m/\/sh$/ ) {
     return 1;
   }
