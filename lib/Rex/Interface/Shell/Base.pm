@@ -54,7 +54,7 @@ sub detect {
 
   my $shell_class = ref $self;
   my @parts       = split /::/, $shell_class;
-  my $last_part   = lc( $parts[-1] );
+  my $last_part   = lc( $parts[-1] || "" );
 
   my ($shell_path) = $con->_exec("echo \$SHELL");
 
