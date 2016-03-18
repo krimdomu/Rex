@@ -584,9 +584,6 @@ sub import {
     require Rex::Commands::Gather;
     Rex::Commands::Gather->import( register_in => $register_to );
 
-    require Rex::Commands::Kernel;
-    Rex::Commands::Kernel->import( register_in => $register_to );
-
     require Rex::Commands::Pkg;
     Rex::Commands::Pkg->import( register_in => $register_to );
 
@@ -616,6 +613,14 @@ sub import {
 
     require Rex::Resource::firewall;
     Rex::Resource::firewall->import( register_in => $register_to );
+
+  }
+
+  if ( $what eq "-base" || $what eq "base" ) {
+
+    # only base, no active features
+    require Rex::Commands::Kernel;
+    Rex::Commands::Kernel->import( register_in => $register_to );
   }
 
   if ( $what eq "-feature" || $what eq "feature" ) {
@@ -649,6 +654,18 @@ sub import {
           );
           exit 1;
         }
+      }
+
+      if ( $add =~ m/^\d+\.\d+$/ && $add < 1.5 ) {
+
+        # feature lower than 1.5, so we load all commands module.
+        require Rex::Commands::Kernel;
+        Rex::Commands::Kernel->import( register_in => $register_to );
+      }
+
+      if ( $add =~ m/^\d+\.\d+$/ && $add >= 1.5 ) {
+        require Rex::Resource::kernel;
+        Rex::Resource::kernel->import( register_in => $register_to );
       }
 
       if ( $add =~ m/^\d+\.\d+$/ && $add >= 1.4 ) {
