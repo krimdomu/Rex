@@ -573,7 +573,7 @@ sub merge_auth {
   my ( $self, $server ) = @_;
 
   # merge auth hashs
-  # task auth as precedence
+  # auth info of task has precedence
   my %auth = $server->merge_auth( $self->{auth} );
 
   return \%auth;
