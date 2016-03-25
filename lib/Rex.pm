@@ -470,6 +470,8 @@ sub connect {
 
 sub deprecated {
   my ( $func, $version, @msg ) = @_;
+  
+  return if(Rex::Config->get_disable_deprecation_warnings);
 
   if ($func) {
     Rex::Logger::info("The call to $func is deprecated.");
@@ -480,16 +482,6 @@ sub deprecated {
       Rex::Logger::info($_);
     }
   }
-
-  Rex::Logger::info("");
-
-  Rex::Logger::info(
-    "Please rewrite your code. This function will disappear in (R)?ex version $version."
-  );
-  Rex::Logger::info(
-    "If you need assistance please join #rex on irc.freenode.net or our google group."
-  );
-
 }
 
 sub import {
@@ -720,6 +712,12 @@ sub import {
       if ( $add =~ m/^\d+\.\d+$/ && $add >= 0.31 ) {
         Rex::Logger::debug("activating featureset >= 0.31");
         Rex::TaskList->create()->set_default_auth(0);
+        $found_feature = 1;
+      }
+
+      if ( $add eq "disable_deprecation_warnings" ) {
+        Rex::Logger::debug("disabling deprecation warnings");
+        Rex::Config->set_disable_deprecation_warnings(1);
         $found_feature = 1;
       }
 

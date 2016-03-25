@@ -61,7 +61,7 @@ our (
   $set_no_append,            $use_net_openssh_if_present,
   $use_template_ng,          $use_rex_kvm_agent,
   $autodie,                  $task_chaining_cmdline_args,
-
+  $disable_deprecation_warnings,
 );
 
 # some defaults
@@ -79,6 +79,15 @@ sub set_autodie {
 
 sub get_autodie {
   return $autodie;
+}
+
+sub set_disable_deprecation_warnings {
+  my $class = shift;
+  $disable_deprecation_warnings = shift;
+}
+
+sub get_disable_deprecation_warnings {
+  return $disable_deprecation_warnings;
 }
 
 sub set_use_net_openssh_if_present {
