@@ -62,21 +62,32 @@ sub call {
   my $failed = 0;
   eval {
     my ( $provider, $mod_config ) = $self->{cb}->( \%params );
-    my $provider_o = $provider->new(
-      type   => $self->type,
-      config => $mod_config,
-      name   => $name
-    );
+    
+    # this if() is for backward compatibility with resources written for
+    # rex version < 1.5
+    # because older resources execute the provider by them self.
+    if(ref $mod_config eq "HASH") {
+      my $provider_o = $provider->new(
+        type   => $self->type,
+        config => $mod_config,
+        name   => $name
+      );
 
-    # TODO add dry-run feature
-    $provider_o->process;
+      # TODO: add dry-run feature
+      $provider_o->process;
 
-    Rex::Resource::Common::emit( $provider_o->status(),
-          $provider_o->type . "["
-        . $provider_o->name
-        . "] is now "
-        . $self->{res_ensure}
-        . "." );
+      Rex::Resource::Common::emit( $provider_o->status(),
+            $provider_o->type . "["
+          . $provider_o->name
+          . "] is now "
+          . $self->{res_ensure}
+          . "." );
+    }
+    else {
+      # TODO: print some deprecation warnings
+      deprecated(undef, "2.0", "The resource api changed since version 1.5.", "Please see resource api documentation to learn how to refactor your resource.");
+    }
+
 
     1;
   } or do {
