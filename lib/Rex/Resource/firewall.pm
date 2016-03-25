@@ -105,45 +105,18 @@ resource "firewall", { export => 1 }, sub {
   };
 
   my $provider =
-    param_lookup( "provider", case ( lc(operating_system), $__provider ) );
+    param_lookup( "provider",
+    get_resource_provider( kernelname(), operating_system() ) );
 
-  if ( $provider !~ m/::/ ) {
-    $provider = "Rex::Resource::firewall::Provider::$provider";
-  }
+  Rex::Logger::debug("Get firewall provider: $provider");
 
-  $provider->require;
-  my $provider_o = $provider->new();
+  return ( $provider, $rule_config );
 
-  my $changed = 0;
-  if ( my $logging = $rule_config->{logging} ) {
-    if ( $provider_o->logging($logging) ) {
-      emit changed, "Firewall logging updated.";
-    }
-  }
-  elsif ( $rule_config->{ensure} eq "present" ) {
-    if ( $provider_o->present($rule_config) ) {
-      emit created, "Firewall rule created.";
-    }
-  }
-  elsif ( $rule_config->{ensure} eq "absent" ) {
-    if ( $provider_o->absent($rule_config) ) {
-      emit removed, "Firewall rule removed.";
-    }
-  }
-  elsif ( $rule_config->{ensure} eq "disabled" ) {
-    if ( $provider_o->disable($rule_config) ) {
-      emit changed, "Firewall disabled.";
-    }
-  }
-  elsif ( $rule_config->{ensure} eq "enabled" ) {
-    if ( $provider_o->enable($rule_config) ) {
-      emit changed, "Firewall enabled.";
-    }
-  }
-  else {
-    die "Error: $rule_config->{ensure} not a valid option for 'ensure'.";
-  }
-
+#  if ( my $logging = $rule_config->{logging} ) {
+#    if ( $provider_o->logging($logging) ) {
+#      emit changed, "Firewall logging updated.";
+#    }
+#  }
 };
 
 =back

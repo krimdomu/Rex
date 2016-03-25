@@ -11,41 +11,22 @@ use warnings;
 
 # VERSION
 
-use Data::Dumper;
+use Moose;
 
-sub new {
-  my $that  = shift;
-  my $proto = ref($that) || $that;
-  my $self  = {@_};
+use Rex::Helper::Run;
 
-  bless( $self, $proto );
+extends qw(Rex::Resource::Provider);
 
-  return $self;
-}
+sub test {
+  my ($self) = @_;
 
-sub present {
-  my ( $self, $rule_config ) = @_;
-  die "Must be implemented by provider.";
-}
+  my $mod = $self->name;
 
-sub absent {
-  my ( $self, $rule_config ) = @_;
-  die "Must be implemented by provider.";
-}
+  # nothing todo
+  return 1;
 
-sub enable {
-  my ( $self, $rule_config ) = @_;
-  Rex::Logger::debug("enable: Not implemented by provider.");
-}
-
-sub disable {
-  my ( $self, $rule_config ) = @_;
-  Rex::Logger::debug("disable: Not implemented by provider.");
-}
-
-sub logging {
-  my ( $self, $rule_config ) = @_;
-  Rex::Logger::debug("logging: Not implemented by provider.");
+  # we have to do something
+  return 0;
 }
 
 1;

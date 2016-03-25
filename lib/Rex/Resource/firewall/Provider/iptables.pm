@@ -11,20 +11,16 @@ use warnings;
 
 # VERSION
 
-use Rex::Commands::Iptables;
+use Moose;
+
+use Rex::Resource::Common;
 use Rex::Helper::Run;
 use Data::Dumper;
-use base qw(Rex::Resource::firewall::Provider::base);
+use Rex::Commands::Iptables;
+require Rex::Commands::File;
 
-sub new {
-  my $that  = shift;
-  my $proto = ref($that) || $that;
-  my $self  = $proto->SUPER::new(@_);
-
-  bless( $self, $proto );
-
-  return $self;
-}
+extends qw(Rex::Resource::firewall::Provider::base);
+with qw(Rex::Resource::Role::Ensureable);
 
 sub present {
   my ( $self, $rule_config ) = @_;
@@ -85,6 +81,7 @@ sub present {
     )
   {
     iptables( $rule_config->{ip_version}, @iptables_rule );
+    $self->_set_status(created);
     return 1;
   }
 
@@ -151,6 +148,7 @@ sub absent {
     )
   {
     iptables( $rule_config->{ip_version}, @iptables_rule );
+    $self->_set_status(removed);
     return 1;
   }
 
