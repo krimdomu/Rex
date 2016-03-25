@@ -470,8 +470,8 @@ sub connect {
 
 sub deprecated {
   my ( $func, $version, @msg ) = @_;
-  
-  return if(Rex::Config->get_disable_deprecation_warnings);
+
+  return if ( Rex::Config->get_disable_deprecation_warnings );
 
   if ($func) {
     Rex::Logger::info("The call to $func is deprecated.");

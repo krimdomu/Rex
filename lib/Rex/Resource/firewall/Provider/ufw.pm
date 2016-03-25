@@ -237,9 +237,9 @@ sub _ufw_exec {
     }
     Rex::Logger::debug("Output from ufw: $output");
 
-    $self->_set_status(created) if($output =~ m/inserted|added/);
-    $self->_set_status(changed) if($output =~ m/updated/);
-    $self->_set_status(removed) if($output =~ m/deleted/);
+    $self->_set_status(created) if ( $output =~ m/inserted|added/ );
+    $self->_set_status(changed) if ( $output =~ m/updated/ );
+    $self->_set_status(removed) if ( $output =~ m/deleted/ );
 
     return $output;
   }

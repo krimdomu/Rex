@@ -112,11 +112,11 @@ resource "firewall", { export => 1 }, sub {
 
   return ( $provider, $rule_config );
 
-#  if ( my $logging = $rule_config->{logging} ) {
-#    if ( $provider_o->logging($logging) ) {
-#      emit changed, "Firewall logging updated.";
-#    }
-#  }
+  #  if ( my $logging = $rule_config->{logging} ) {
+  #    if ( $provider_o->logging($logging) ) {
+  #      emit changed, "Firewall logging updated.";
+  #    }
+  #  }
 };
 
 =back
