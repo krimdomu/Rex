@@ -497,6 +497,11 @@ sub get_group {
 sub rm_group {
   my ( $self, $group ) = @_;
 
+  my $gid = $self->get_gid($group);
+  if( ! $gid ) {
+    return;
+  }
+
   i_run "/usr/sbin/groupdel $group";
   if ( $? != 0 ) {
     die("Error deleting group $group");
