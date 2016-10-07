@@ -135,6 +135,13 @@ has output => (
   },
 );
 
+has task_store => (
+  is => 'ro',
+  isa => 'Rex::TaskList::Store',
+  lazy => 1,
+  default => sub { return Rex::TaskList::Store->instance; },
+);
+
 sub push_lib_to_inc {
   my $path = shift;
 
@@ -651,9 +658,6 @@ sub import {
     require Rex::Resource::firewall;
     Rex::Resource::firewall->import( register_in => $register_to );
 
-    # new command code structure
-    require Rex::Function::Fs::is_file;
-    Rex::Function::Fs::is_file->import( register_in => $register_to );
   }
 
   if ( $what eq "-base" || $what eq "base" ) {
@@ -724,9 +728,19 @@ sub import {
         require Rex::Resource::file;
         Rex::Resource::file->import( register_in => $register_to );
 
+        require Rex::Function::Fs::is_file;
+        Rex::Function::Fs::is_file->import( register_in => $register_to );
+
         # new command code structure
         require Rex::Function::run;
         Rex::Function::run->import( register_in => $register_to );
+
+        # new command code structure
+        require Rex::Function::run;
+        Rex::Function::run->import( register_in => $register_to );
+
+        require Rex::DSL::Common::task;
+        Rex::DSL::Common::task->import( register_in => $register_to );
       }
 
       if ( $add =~ m/^\d+\.\d+$/ && $add >= 1.4 ) {

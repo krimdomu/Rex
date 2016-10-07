@@ -285,7 +285,7 @@ CHECK_OVERWRITE: {
     );
   }
   elsif ( $opts{'T'} ) {
-    _handle_T(%opts);
+    $self->_handle_T(%opts);
 
     Rex::global_sudo(0);
     Rex::Logger::debug("Removing lockfile") if ( !exists $opts{'F'} );
@@ -472,21 +472,22 @@ sub __version__ {
 }
 
 sub _handle_T {
-  my %opts = @_;
+  my ($self, %opts) = @_;
 
   my ($cols) = Term::ReadKey::GetTerminalSize(*STDOUT);
   $Text::Wrap::columns = $cols || 80;
 
-  _list_tasks();
+  $self->_list_tasks();
   _list_batches();
   _list_envs();
   _list_groups();
 }
 
 sub _list_tasks {
+  my ($self) = @_;
   Rex::Logger::debug("Listing Tasks");
 
-  my @tasks = Rex::TaskList->create()->get_tasks;
+  my @tasks = @{ $self->app->task_store->tasks };
   if ( defined $ARGV[0] ) {
     @tasks = grep { $_ =~ /^$ARGV[0]/ } @tasks;
 
@@ -511,8 +512,8 @@ sub _list_tasks {
     print "\n" if $last_namespace ne _namespace($task);
     $last_namespace = _namespace($task);
 
-    my $description = Rex::TaskList->create()->get_desc($task);
-    my $output      = sprintf $fmt, $task, $description;
+    my $description = $task->desc || '';
+    my $output      = sprintf $fmt, $task->name, $description;
     my $indent      = " " x $max_task_len . "   ";
 
     print wrap( "", $indent, $output );
